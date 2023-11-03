@@ -1,0 +1,11 @@
+/node_modules
+/.pnp
+.pnp.js
+
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+#I don't know what we need in this gitignore so I went a little overboard. /node_modules might be the only actually necessary one
