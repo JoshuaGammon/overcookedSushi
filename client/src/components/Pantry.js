@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import Axios from 'axios' //  I'm not sure if we need Axios
 //import {useHistory} from "react-router-dom"
 
-function Home() {
+function Pantry() {
   return(
     <>
-      <h1>Home</h1>
+      <p>Hello this is your pantry!</p>
     </>
   )
 };
 
-export default Home;
+export default Pantry;

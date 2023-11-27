@@ -1,8 +1,8 @@
 //  This file is base app file that start when npm start is called
 
 import React, { useEffect, useState } from 'react';
+import { Outlet, Link } from 'react-router-dom';
 //  import './App.css'; // CSS Import statement
-//  import Home from './components/Home' // Import for Home Page
 
 function App() {
   const [data, setData] = useState([])
@@ -15,22 +15,25 @@ function App() {
   }, [])
 //  Returning html of simple table that displays the data
   return (
-    <div>
-        <table>
-          <thead>
-            <th>ID</th>
-            <th>Name</th>
-          </thead>
-          <tbody>
-            {data.map((d, i) => (
-              <tr key={i}>
-              <td>{d.user_id}</td>
-              <td>{d.user_name}</td>
-            </tr>
-            ))}
-          </tbody>
-        </table>
-    </div>
+    <>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/groceries">Grocery List</Link>
+          </li>
+          <li>
+            <Link to="/pantry">Pantry</Link>
+          </li>
+          <li>
+            <Link to="/recipes">Recipes</Link>
+          </li>
+        </ul>
+      </nav>
+      <Outlet />
+    </>
   );
 }
 
