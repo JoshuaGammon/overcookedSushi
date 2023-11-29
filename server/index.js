@@ -11,13 +11,13 @@ app.use(express.json())
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '', // FILL IN
-    database: 'test_db' // FILL IN
+    password: 'Must$coch24', // FILL IN
+    database: 'overcookedSushi_db' // FILL IN
 })
 
 //  API Calls
-app.get('/users', (req,res)=>{
-    const sql = "SELECT * FROM test_table"
+app.get('/recipes', (req,res)=>{
+    const sql = "SELECT * FROM Recipe"
     db.query(sql, (err,data)=>{
         if(err) return res.json(err);
         return res.json(data);
