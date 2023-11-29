@@ -24,6 +24,14 @@ app.get('/users', (req,res)=>{
     })
 })
 
+app.get('/pantryItems', (req,res)=>{
+    const sql = "SELECT * FROM pantry_table"
+    db.query(sql, (err,data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
 app.get('/', (req,res)=>{
     return res.json("From backend side")
 })
