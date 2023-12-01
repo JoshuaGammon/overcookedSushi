@@ -9,25 +9,63 @@ app.use(express.json())
 
 //  Connecting to DB
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
+    host: '',
+    user: '',
     password: '', // FILL IN
-    database: 'test_db' // FILL IN
+    database: '' // FILL IN
 })
 
 //  API Calls
-app.get('/users', (req,res)=>{
-    const sql = "SELECT * FROM test_table"
-    db.query(sql, (err,data)=>{
+app.get('/retrieveUsers', (req,res)=>{
+    const sql = "SELECT * FROM User"
+    db.query(sql, (err,data) => {
         if(err) return res.json(err);
         return res.json(data);
     })
 })
 
-app.get('/', (req,res)=>{
+app.get('/retrieveGrocery', (req,res)=>{
+    const sql = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
+    db.query(sql, (err,data) => {
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.get('/migrateGroceries', (req,res)=>{
+    const grabGroceries = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
+    db.query(grabGroceries, (err1, data1) => {
+        if(err1) return res.json(err1);
+        else {
+            for(let i = 0; i < data1.length; i++){
+                const insertIntoPantry = "INSERT INTO Pantry VALUES ('juliac', " + data1[i].ingredient_id + ", CURDATE(), " + data1[i].quantity_numerator + ", " + data1[i].quantity_denominator + ", '" + data1[i].measurement_type + "')";
+                db.query(insertIntoPantry, (err2, data2) => {
+                    if(err2) return res.json(err2);
+                    else {
+                        if(data2.affectedRows == 1){
+                            const removeFromGrocery = "DELETE FROM Grocery_List WHERE Grocery_List.ingredient_id = " + data1[i].ingredient_id;
+                            db.query(removeFromGrocery, (err3, data3) => {
+                                if(err3) return res.json(err3);
+                                else {
+                                    if(data3.affectedRows == 1) return res.json(true);
+                                    else return res.json(false);
+                                }
+                            })
+                        }
+                        else{
+                            return res.json(false);
+                        }
+                    }
+                })
+            }
+        }
+    })
+})
+
+app.get('/', (req,res) => {
     return res.json("From backend side")
 })
 
-app.listen(8081, ()=>{
+app.listen(8081, () => {
     console.log("listening");
 })
