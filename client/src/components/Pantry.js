@@ -25,10 +25,10 @@ function Pantry() {
           <tbody>
             {data.map((d, i) => (
               <tr key={i}>
-              <td>{d.item_id}</td>
-              <td>{d.item_name}</td>
-              <td>{d.amount}</td>
-              <td>{d.unit_type}</td>
+              <td>{d.ingredient_id}</td>
+              <td>{d.ingredient_name}</td>
+              <td>{(d.quantity_numerator/d.quantity_denominator)}</td>
+              <td>{d.measurement_type}</td>
             </tr>
             ))}
           </tbody>
