@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-//  import './App.css'; // CSS Import statement
+import './App.css'; // CSS Import statement
 
 function App() {
   const [data, setData] = useState([])
@@ -14,18 +14,18 @@ function App() {
   return (
     <>
       <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
+        <ul className="navbar">
+          <li className="navbar-item">
+            <Link to="/" className="navbar-link">Home</Link>
           </li>
-          <li>
-            <Link to="/groceries">Grocery List</Link>
+          <li className="navbar-item">
+            <Link to="/groceries" className="navbar-link">Grocery List</Link>
           </li>
-          <li>
-            <Link to="/pantry">Pantry</Link>
+          <li className="navbar-item">
+            <Link to="/pantry" className="navbar-link">Pantry</Link>
           </li>
-          <li>
-            <Link to="/recipes">Recipes</Link>
+          <li className="navbar-item">
+            <Link to="/recipes" className="navbar-link">Recipes</Link>
           </li>
         </ul>
       </nav>
