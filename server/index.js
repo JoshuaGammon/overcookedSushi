@@ -26,7 +26,11 @@ app.get('/retrieveUsers', (req,res)=>{
 
 app.get('/pantryItems', (req,res)=>{
     const sql = "SELECT i.ingredient_id, i.ingredient_name, p.bought_date, p.quantity_numerator, p.quantity_denominator, p.measurement_type, i.shelf_life, i.shelf_life - DATEDIFF(CURDATE(), p.bought_date) AS daysLeft FROM Ingredient AS i JOIN Pantry AS p ON i.ingredient_id = p.ingredient_id";
-    db.query(sql, (err,data)=>{    
+    db.query(sql, (err,data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
 
 app.get('/retrieveGrocery', (req,res)=>{
     const sql = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
