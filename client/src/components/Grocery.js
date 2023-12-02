@@ -16,22 +16,22 @@ function Grocery() {
       <>
         <p>Hello this is your grocery list!</p>
         <div>
-            {data.map((rowData, rowIndex) => (
-                <table>
-                  <thead>
-                    <th>Ingredient Name</th>
-                    <th>Quantity</th>
-                    <th>Unit of Measurement</th>
-                  </thead>
-                  <tbody>
-                    <tr key={rowIndex}>
-                      <td>{rowData.ingredient_name}</td>
-                      <td>{rowData.quantity_numerator + "/" + rowData.quantity_denominator}</td>
-                      <td>{rowData.measurement_type}</td>
-                    </tr>
-                  </tbody>
-                </table>
-            ))}
+          <table>
+            <thead>
+              <th>Ingredient Name</th>
+              <th>Quantity</th>
+              <th>Unit of Measurement</th>
+            </thead>
+            <tbody>
+              {data.map((rowData, rowIndex) => (
+                <tr key={rowIndex}>
+                  <td>{rowData.ingredient_name}</td>
+                  <td>{rowData.quantity_numerator + "/" + rowData.quantity_denominator}</td>
+                  <td>{rowData.measurement_type}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
         <button onClick = {() => migrateGroceries()}>Mark Items as Bought</button>
       </>
