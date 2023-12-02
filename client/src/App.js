@@ -8,10 +8,7 @@ function App() {
   const [data, setData] = useState([])
   useEffect(()=>{
 //  Accesses DB info through backend server
-    fetch('http://localhost:8081/users')
-    .then(res => res.json())
-    .then(data => setData(data))
-    .catch(err => console.log(err));
+
   }, [])
 //  Returning html of simple table that displays the data
   return (
