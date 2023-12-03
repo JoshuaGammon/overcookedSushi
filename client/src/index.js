@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route} from "react-router-dom";
 import reportWebVitals from './reportWebVitals';
 //  import './index.css';
 import Layout from './App';
 import Grocery from './components/Grocery'
 import Pantry from './components/Pantry'
 import Recipe from './components/Recipe'
+import RecipeEntry from './components/recipeEntry'
 import Home from './components/Home';
 
 export default function App(){
@@ -18,7 +19,9 @@ export default function App(){
           <Route path="groceries" element={<Grocery />} />
           <Route path="pantry" element={<Pantry />} />
           <Route path="recipes" element={<Recipe />} />
-          {/* <Route path="*" element={<NoPage />} /> */}
+          <Route path="recipes/:recipe_name" element={<RecipeEntry />} loader={({params}) => {console.log(params.recipe_name);}} action={({params}) => {}} ele/>
+          
+          <Route path="*" element={<Home />} />
         </Route>
       </Routes>
     </BrowserRouter>
