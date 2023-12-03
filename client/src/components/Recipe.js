@@ -5,7 +5,7 @@ import Axios from 'axios' //  I'm not sure if we need Axios
 function Recipe() {
   return(
     <>
-      <p>Hello this is your recipies!</p>
+      <p>Hello, these are your recipes!</p>
     </>
   )
 };

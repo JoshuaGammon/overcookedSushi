@@ -14,25 +14,28 @@ function Grocery() {
   if(data.length > 0) {
     return(
       <>
-        <p>Hello this is your grocery list!</p>
+        <p>Hello, this is your grocery list!</p>
         <div>
           <table>
             <thead>
-              <th>Ingredient Name</th>
-              <th>Quantity</th>
-              <th>Unit of Measurement</th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Unit Type</th>
             </thead>
             <tbody>
               {data.map((rowData, rowIndex) => (
                 <tr key={rowIndex}>
+                  <td>{rowData.ingredient_id}</td>
                   <td>{rowData.ingredient_name}</td>
-                  <td>{rowData.quantity_numerator + "/" + rowData.quantity_denominator}</td>
+                  <td>{rowData.quantity_numerator/rowData.quantity_denominator}</td>
                   <td>{rowData.measurement_type}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <br></br>
         <button onClick = {() => migrateGroceries()}>Mark Items as Bought</button>
       </>
     )
@@ -49,14 +52,6 @@ function Grocery() {
 function migrateGroceries() {
   fetch('http://localhost:8081/migrateGroceries')
   .then(res => res.json())
-  .then(data => {
-    if(data){
-      console.log(data);
-    }
-    else {
-      console.log("Failed to migrate groceries");
-    }
-  })
   .catch(err => console.log(err));
 }
 
