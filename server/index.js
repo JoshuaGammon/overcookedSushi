@@ -16,6 +16,15 @@ const db = mysql.createConnection({
 })
 
 //  API Calls
+app.get('/recipes', (req,res)=>{
+    const sql = "SELECT * FROM Recipe"
+    db.query(sql, (err,data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+//  API Calls
 app.get('/retrieveUsers', (req,res)=>{
     const sql = "SELECT * FROM User"
     db.query(sql, (err,data) => {
@@ -32,10 +41,31 @@ app.get('/pantryItems', (req,res)=>{
     })
 })
 
+app.get('/recipes/:recipe_id', (req,res)=>{
+    //console.log(req.body.id)
+    let id = req.params.recipe_id;
+    const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?"
+    db.query(ingredients, [id], (err,data) =>{
+        if(err) return res.json(err);
+        //console.log(data)
+        return res.json(data);
+    })
+})
+
 app.get('/retrieveGrocery', (req,res)=>{
     const sql = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
     db.query(sql, (err,data) => {
         if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.get('/pantry/:ingredient_id', (req,res) => {
+    let id = req.params.ingredient_id;
+    const q = "SELECT * FROM Pantry WHERE ingredient_id = ?"
+    db.query(q, [id], (err,data) =>{
+        if(err) return res.json(err);
+        //console.log(data)
         return res.json(data);
     })
 })

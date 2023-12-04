@@ -5,11 +5,6 @@ import { Outlet, Link } from 'react-router-dom';
 import './App.css'; // CSS Import statement
 
 function App() {
-  const [data, setData] = useState([])
-  useEffect(()=>{
-//  Accesses DB info through backend server
-
-  }, [])
 //  Returning html of simple table that displays the data
   return (
     <>
