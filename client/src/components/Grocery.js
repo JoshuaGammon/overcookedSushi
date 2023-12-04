@@ -53,6 +53,6 @@ function migrateGroceries() {
   fetch('http://localhost:8081/migrateGroceries')
   .then(res => res.json())
   .catch(err => console.log(err));
-}
+};
 
 export default Grocery;
