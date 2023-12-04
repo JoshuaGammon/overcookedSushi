@@ -103,7 +103,64 @@ function addFractions(numerator1, numerator2, denominator1, denominator2){
     else return [(numerator1 * denominator2) + (numerator2 * denominator1), denominator1 * denominator2];
 }
 
-app.get('/migrateGroceries', (req,res)=>{
+app.get('/addIngredients/:recipe_id', (req, res) => {
+    let id = req.params.recipe_id;
+    const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?";
+    db.query(ingredients, [id], (err1, data1) =>{
+        if(err1) return res.json(err1);
+        else {
+            for(let i = 0; i < data1.length; i++){
+                const existenceCheck = "SELECT * FROM Grocery_List WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = " + data1[i].ingredient_id;
+                db.query(existenceCheck, (err2, data2) => {
+                    if(err2) return res.json(err2);
+                    else{
+                        let num = data1[i].quantity_numerator;
+                        let den = data1[i].quantity_denominator;
+                        //If that ingredient exists in the grocery list
+                        if(data2.length > 0) {
+                            console.log("in if");
+                            let destUnits = data2[0].measurement_type;
+                            let sourceUnits = data1[i].measurement_type;
+                            try{
+                                [num, den] = convertUnits(sourceUnits, destUnits, data1[i].quantity_numerator, data1[i].quantity_denominator);
+                            }
+                            catch (e) {
+                                console.log("Problem converting units.")
+                                return res.json(false);
+                            }
+
+                            const updatedQuantity = addFractions(data2[0].quantity_numerator, num, data2[0].quantity_denominator, den);
+                            const updateGrocery = "UPDATE Grocery_List SET quantity_numerator = " + updatedQuantity[0] + ", quantity_denominator = " + updatedQuantity[1] + " WHERE ingredient_id = " + data2[0].ingredient_id;
+                            db.query(updateGrocery, (err3, data3) => {
+                                if(err3) return res.json(err3);
+                                else {
+                                    if(data3.affectedRows != 1) return res.json(false);
+                                }
+                            })
+                        }
+                        //If that ingredient does not exist in the grocery list
+                        else {
+                            const insertIntoGrocery = "INSERT INTO Grocery_List VALUES ('juliac', " + data1[i].ingredient_id + "," + data1[i].quantity_numerator + ", " + data1[i].quantity_denominator + ", '" + data1[i].measurement_type + "')";
+                            db.query(insertIntoGrocery, (err4, data4) => { 
+                                if(err4) return res.json(err4);
+                                else {
+                                    if(data4.affectedRows != 1) return res.json(false);
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        }
+        return res.json(true);
+    })
+})
+
+app.get('/removeIngredients/:recipe_id', (req, res) => {
+    let id = req.params.ingredient_id;
+})
+
+app.get('/migrateGroceries', (req, res) => {
     const grabGroceries = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
     db.query(grabGroceries, (err1, data1) => {
         if(err1) return res.json(err1);
@@ -123,15 +180,16 @@ app.get('/migrateGroceries', (req,res)=>{
                                 [num, den] = convertUnits(sourceUnits, destUnits, data1[i].quantity_numerator, data1[i].quantity_denominator);
                             }
                             catch (e) {
-                                console.error(e);
+                                console.log("Problem converting units.")
+                                return res.json(false);
                             }
 
                             //If the date is the same (alter)
                             let currentDate = new Date();
                             if(data2[0].bought_date.toISOString().slice(0,10) == currentDate.toISOString().slice(0,10)){
                                 const updatedQuantity = addFractions(data2[0].quantity_numerator, num, data2[0].quantity_denominator, den)
-                                const insertIntoPantry = "UPDATE Pantry SET quantity_numerator = " + updatedQuantity[0] + ", quantity_denominator = " + updatedQuantity[1] + " WHERE ingredient_id = " + data2[0].ingredient_id;
-                                db.query(insertIntoPantry, (err3, data3) => {
+                                const updatePantry = "UPDATE Pantry SET quantity_numerator = " + updatedQuantity[0] + ", quantity_denominator = " + updatedQuantity[1] + " WHERE ingredient_id = " + data2[0].ingredient_id;
+                                db.query(updatePantry, (err3, data3) => {
                                     if(err3) return res.json(err3);
                                     else {
                                         if(data3.affectedRows == 1){
@@ -139,8 +197,7 @@ app.get('/migrateGroceries', (req,res)=>{
                                             db.query(removeFromGrocery, (err4, data4) => {
                                                 if(err4) return res.json(err4);
                                                 else {
-                                                    if(data4.affectedRows == 1) return res.json(true);
-                                                    else return res.json(false);
+                                                    if(data4.affectedRows != 1) return res.json(false);
                                                 }
                                             })
                                         }
@@ -159,8 +216,7 @@ app.get('/migrateGroceries', (req,res)=>{
                                             db.query(removeFromGrocery, (err6, data6) => {
                                                 if(err6) return res.json(err6);
                                                 else {
-                                                    if(data6.affectedRows == 1) return res.json(true);
-                                                    else return res.json(false);
+                                                    if(data6.affectedRows != 1) return res.json(false);
                                                 }
                                             })
                                         }
@@ -180,8 +236,7 @@ app.get('/migrateGroceries', (req,res)=>{
                                         db.query(removeFromGrocery, (err8, data8) => {
                                             if(err8) return res.json(err8);
                                             else {
-                                                if(data8.affectedRows == 1) return res.json(true);
-                                                else return res.json(false);
+                                                if(data8.affectedRows != 1) return res.json(false);
                                             }
                                         })
                                     }
@@ -193,6 +248,7 @@ app.get('/migrateGroceries', (req,res)=>{
                 })
             }
         }
+        return res.json(true);
     })
 })
 

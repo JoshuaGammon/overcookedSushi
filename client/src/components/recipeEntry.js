@@ -40,19 +40,33 @@ function RecipeEntry() {
         <>
             <h1>{location.state.recipe_name}</h1>
             <h3>{location.state.recipe_author}</h3>
-            <h4>{location.state.recipe_count}</h4>
+            <h4>{location.state.recipe_count + " Servings"}</h4>
             <p>{location.state.recipe_steps}</p>
             <ul>
                 {ingredients.map((d, i) => (
                     <li>
-                        <div>{d.quantity_numerator}/{d.quantity_denominator}</div>
-                        <div>{d.measurement_type}</div>
-                        <div>{d.ingredient_name}</div>
+                        <div>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
                     </li>
                 ))}
             </ul>
+            <button onClick = {() => removeFromPantry(id)}>Mark as Cooked</button>
+            <br></br>
+            <br></br>
+            <button onClick = {() => addToGroceryList(id)}>Cook Later</button>
         </>
     )
-}
+};
+
+function removeFromPantry(id){
+    fetch('http://localhost:8081/removeIngredients/' + id)
+    .then(res => res.json())
+    .catch(err => console.log(err));
+};
+
+function addToGroceryList(id){
+    fetch('http://localhost:8081/addIngredients/' + id)
+    .then(res => res.json())
+    .catch(err => console.log(err));
+};
 
 export default RecipeEntry;

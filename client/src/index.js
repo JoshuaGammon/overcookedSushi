@@ -20,7 +20,7 @@ export default function App(){
           <Route path="pantry" element={<Pantry />} />
           <Route path="recipes" element={<Recipe />} />
           <Route path="recipes/:recipe_name" element={<RecipeEntry />} loader={({params}) => {console.log(params.recipe_name);}} action={({params}) => {}} ele/>
-          
+          <Route path="addIngredients/:recipe_id" element={<RecipeEntry />} loader={({params}) => {console.log(params.recipe_id);}} action={({params}) => {}} ele/>
           <Route path="*" element={<Home />} />
         </Route>
       </Routes>

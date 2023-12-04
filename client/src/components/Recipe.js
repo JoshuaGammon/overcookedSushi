@@ -29,9 +29,6 @@ function Recipe() {
       .then(ingredients => setData(ingredients))
       .catch(err => console.log(err));
     }, [id]);
-
-    
-
   }
 
   return(
