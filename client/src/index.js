@@ -9,6 +9,7 @@ import Pantry from './components/Pantry'
 import Recipe from './components/Recipe'
 import RecipeEntry from './components/recipeEntry'
 import Home from './components/Home';
+import NewRecipe from './components/NewRecipe'
 
 export default function App(){
   return(
@@ -19,6 +20,7 @@ export default function App(){
           <Route path="groceries" element={<Grocery />} />
           <Route path="pantry" element={<Pantry />} />
           <Route path="recipes" element={<Recipe />} />
+          <Route path="newRecipe" element={<NewRecipe />} />
           <Route path="recipes/:recipe_name" element={<RecipeEntry />} loader={({params}) => {console.log(params.recipe_name);}} action={({params}) => {}} ele/>
           <Route path="addIngredients/:recipe_id" element={<RecipeEntry />} loader={({params}) => {console.log(params.recipe_id);}} action={({params}) => {}} ele/>
           <Route path="*" element={<Home />} />
