@@ -1,6 +1,6 @@
 //  This file is base app file that start when npm start is called
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import './App.css'; // CSS Import statement
 
@@ -21,6 +21,9 @@ function App() {
           </li>
           <li className="navbar-item">
             <Link to="/recipes" className="navbar-link">Recipes</Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/newRecipe" className="navbar-link">Add a recipe</Link>
           </li>
         </ul>
       </nav>
