@@ -11,8 +11,8 @@ app.use(express.json())
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '#overcookedSushi345#', // FILL IN
-    database: 'test_db' // FILL IN
+    password: 'Must$coch24', // FILL IN
+    database: 'overcookedSushi_db' // FILL IN
 })
 
 //  API Calls
@@ -226,57 +226,54 @@ function addFractions(numerator1, numerator2, denominator1, denominator2){
     else return [(numerator1 * denominator2) + (numerator2 * denominator1), denominator1 * denominator2];
 }
 
-app.get('/addIngredients/:recipe_id', (req, res) => {
-    let id = req.params.recipe_id;
-    const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?";
-    db.query(ingredients, [id], (err1, data1) =>{
-        if(err1) return res.json(err1);
-        else {
-            for(let i = 0; i < data1.length; i++){
-                const existenceCheck = "SELECT * FROM Grocery_List WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = " + data1[i].ingredient_id;
-                db.query(existenceCheck, (err2, data2) => {
-                    if(err2) return res.json(err2);
-                    else{
-                        let num = data1[i].quantity_numerator;
-                        let den = data1[i].quantity_denominator;
-                        //If that ingredient exists in the grocery list
-                        if(data2.length > 0) {
-                            console.log("in if");
-                            let destUnits = data2[0].measurement_type;
-                            let sourceUnits = data1[i].measurement_type;
-                            try{
-                                [num, den] = convertUnits(sourceUnits, destUnits, data1[i].quantity_numerator, data1[i].quantity_denominator);
-                            }
-                            catch (e) {
-                                console.log("Problem converting units.")
-                                return res.json(false);
-                            }
+app.post('/addIngredients', (req, res) => {
+    //let id = req.params.recipe_id;
+    let ingredients = req.body;
+            for(let i = 0; i < ingredients.length; i++){
+                if(!ingredients[i].pantry){
+                    const existenceCheck = "SELECT * FROM Grocery_List WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = " + ingredients[i].ingredient_id;
+                    db.query(existenceCheck, (err2, data) => {
+                        if(err2) return res.json(err2);
+                        else{
+                            let num = ingredients[i].quantity_numerator;
+                            let den = ingredients[i].quantity_denominator;
+                            //If that ingredient exists in the grocery list
+                            if(data.length > 0) {
+                                console.log("in if");
+                                let destUnits = data[0].measurement_type;
+                                let sourceUnits = ingredients[i].measurement_type;
+                                try{
+                                    [num, den] = convertUnits(sourceUnits, destUnits, ingredients[i].quantity_numerator, ingredients[i].quantity_denominator);
+                                }
+                                catch (e) {
+                                    console.log("Problem converting units.")
+                                    return res.json(false);
+                                }
 
-                            const updatedQuantity = addFractions(data2[0].quantity_numerator, num, data2[0].quantity_denominator, den);
-                            const updateGrocery = "UPDATE Grocery_List SET quantity_numerator = " + updatedQuantity[0] + ", quantity_denominator = " + updatedQuantity[1] + " WHERE ingredient_id = " + data2[0].ingredient_id;
-                            db.query(updateGrocery, (err3, data3) => {
-                                if(err3) return res.json(err3);
-                                else {
-                                    if(data3.affectedRows != 1) return res.json(false);
-                                }
-                            })
+                                const updatedQuantity = addFractions(data[0].quantity_numerator, num, data[0].quantity_denominator, den);
+                                const updateGrocery = "UPDATE Grocery_List SET quantity_numerator = " + updatedQuantity[0] + ", quantity_denominator = " + updatedQuantity[1] + " WHERE ingredient_id = " + data[0].ingredient_id;
+                                db.query(updateGrocery, (err3, data2) => {
+                                    if(err3) return res.json(err3);
+                                    else {
+                                        if(data2.affectedRows != 1) return res.json(false);
+                                    }
+                                })
+                            }
+                            //If that ingredient does not exist in the grocery list
+                            else {
+                                const insertIntoGrocery = "INSERT INTO Grocery_List VALUES ('juliac', " + ingredients[i].ingredient_id + "," + ingredients[i].quantity_numerator + ", " + ingredients[i].quantity_denominator + ", '" + ingredients[i].measurement_type + "')";
+                                db.query(insertIntoGrocery, (err4, data3) => { 
+                                    if(err4) return res.json(err4);
+                                    else {
+                                        if(data3.affectedRows != 1) return res.json(false);
+                                    }
+                                })
+                            }
                         }
-                        //If that ingredient does not exist in the grocery list
-                        else {
-                            const insertIntoGrocery = "INSERT INTO Grocery_List VALUES ('juliac', " + data1[i].ingredient_id + "," + data1[i].quantity_numerator + ", " + data1[i].quantity_denominator + ", '" + data1[i].measurement_type + "')";
-                            db.query(insertIntoGrocery, (err4, data4) => { 
-                                if(err4) return res.json(err4);
-                                else {
-                                    if(data4.affectedRows != 1) return res.json(false);
-                                }
-                            })
-                        }
-                    }
-                })
+                    })
+                }
             }
-        }
-        return res.json(true);
-    })
+    return res.json(true);
 })
 
 app.get('/removeIngredients/:recipe_id', (req, res) => {
