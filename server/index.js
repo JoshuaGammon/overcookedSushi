@@ -97,31 +97,98 @@ app.get('/pantryItems', (req,res)=>{
     })
 })
 
-app.get('/recipes/:recipe_id', (req,res)=>{
-    //console.log(req.body.id)
+app.get('/recipes/:recipe_id', async (req,res)=>{
     let id = req.params.recipe_id;
+    let ingredientLst = [];
     const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?"
-    db.query(ingredients, [id], (err,data) =>{
-        if(err) return res.json(err);
-        //console.log(data)
-        return res.json(data);
-    })
+    
+    try {
+        const data1 = await new Promise((resolve, reject) => {
+            db.query(ingredients, [id], (err1,data) =>{
+                if(err1) reject(err1);
+                else resolve(data);
+            })
+        })
+
+        for(let i = 0; i < data1.length -1; i++){
+            const pantryCheck = "SELECT * FROM Pantry WHERE ingredient_id = " + data1[i].ingredient_id;
+
+            try{
+                const data2 = await new Promise((resolve, reject) => {
+                    db.query(pantryCheck, (err2, data) => {
+                        if(err2) reject(err2);
+                        else resolve(data);
+                    })
+                })
+
+                if (data2.length > 0){
+                    if (data1[i].measurement_type == data2[0].measurement_type){
+                        let pantry = data2[0].quantity_numerator / parseFloat(data2[0].quantity_denominator);
+                        let recipe = data1[i].quantity_numerator / parseFloat(data1[i].quantity_denominator);
+                        if(pantry >= recipe){
+                            ingredientLst.push(
+                                {
+                                    "ingredient_id": data1[i].ingredient_id,
+                                    "ingredient_name": data1[i].ingredient_name,
+                                    "quantity_numerator": data1[i].quantity_numerator,
+                                    "quantity_denominator": data1[i].quantity_denominator,
+                                    "measurement_type": data1[i].measurement_type,
+                                    "pantry": true,
+                                }
+                            )
+                        }
+                    } else {
+                        try{
+                            [recipe_num, recipe_den] = convertUnits(data1[i].measurement_type, data2[0].measurement_type, data1[i].quantity_numerator, data1[i].quantity_denominator);
+
+                        } catch (e) {
+                            console.log("Problem converting units.")
+                            return res.json("Can't convert units");
+                        }
+
+                        let pantry = data2[0].quantity_numerator / parseFloat(data2[0].quantity_denominator);
+                        let recipe = recipe_num / parseFloat(recipe_den);
+                        if(pantry >= recipe){
+                            ingredientLst.push(
+                                {
+                                    "ingredient_id": data1[i].ingredient_id,
+                                    "ingredient_name": data1[i].ingredient_name,
+                                    "quantity_numerator": data1[i].quantity_numerator,
+                                    "quantity_denominator": data1[i].quantity_denominator,
+                                    "measurement_type": data1[i].measurement_type,
+                                    "pantry": true,
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    ingredientLst.push(
+                        {
+                            "ingredient_id": data1[i].ingredient_id,
+                            "ingredient_name": data1[i].ingredient_name,
+                            "quantity_numerator": data1[i].quantity_numerator,
+                            "quantity_denominator": data1[i].quantity_denominator,
+                            "measurement_type": data1[i].measurement_type,
+                            "pantry": false,
+                        }
+                    )
+                }
+            } catch (err) {
+                return res.json(err);
+            }
+        }
+        //console.log(ingredientLst);
+        return res.json(ingredientLst);
+
+    } catch (err){
+        return res.json(err);
+    }
 })
 
 app.get('/retrieveGrocery', (req,res)=>{
     const sql = "SELECT * FROM Grocery_List, Ingredient WHERE Grocery_List.username = 'juliac' AND Grocery_List.ingredient_id = Ingredient.ingredient_id"
     db.query(sql, (err,data) => {
         if(err) return res.json(err);
-        return res.json(data);
-    })
-})
-
-app.get('/pantry/:ingredient_id', (req,res) => {
-    let id = req.params.ingredient_id;
-    const q = "SELECT * FROM Pantry WHERE ingredient_id = ?"
-    db.query(q, [id], (err,data) =>{
-        if(err) return res.json(err);
-        //console.log(data)
         return res.json(data);
     })
 })
