@@ -6,11 +6,17 @@ function RecipeEntry() {
     let id = location.state.recipe_id;
 
     const [ingredients, setData] = useState([])
+    const [isFavorite, setStatus] = useState([])
     useEffect(()=>{
-      fetch('http://localhost:8081/recipes/'+ id)
-      .then(res => res.json())
-      .then(ingredients => setData(ingredients))
-      .catch(err => console.log(err));
+        fetch('http://localhost:8081/recipes/' + id)
+        .then(res => res.json())
+        .then(ingredients => setData(ingredients))
+        .catch(err => console.log(err));
+
+        fetch('http://localhost:8081/checkIfFavorite/' + id)
+        .then(res => res.json())
+        .then(isFavorite => setStatus(isFavorite))
+        .catch(err => console.log(err));
     }, [id]);
     
     // const CheckPantry = (id) => {
@@ -36,25 +42,66 @@ function RecipeEntry() {
     //     }, [id]);
     // })
 
-    return(
-        <>
-            <h1>{location.state.recipe_name}</h1>
-            <h3>{location.state.recipe_author}</h3>
-            <h4>{location.state.recipe_count + " Servings"}</h4>
-            <p>{location.state.recipe_steps}</p>
-            <ul>
-                {ingredients.map((d, i) => (
-                    <li>
-                        <div>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
-                    </li>
-                ))}
-            </ul>
-            <button onClick = {() => removeFromPantry(id)}>Mark as Cooked</button>
-            <br></br>
-            <br></br>
-            <button onClick = {() => addToGroceryList(id)}>Cook Later</button>
-        </>
-    )
+    if(isFavorite){
+        return(
+            <>
+                <h1>{location.state.recipe_name}</h1>
+                <h3>{location.state.recipe_author}</h3>
+                <h4>{location.state.recipe_count + " Servings"}</h4>
+                <p>{location.state.recipe_steps}</p>
+                <ul>
+                    {ingredients.map((d, i) => (
+                        <li>
+                            <div>{d.quantity_numerator/d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
+                        </li>
+                    ))}
+                </ul>
+                <button onClick = {() => addToGroceryList(id)}>Cook Later (Add All Ingredients)</button>
+                <br></br>
+                <br></br>
+                <button onClick = {() => removeFromPantry(id)}>Mark as Cooked (Remove Ingredients You Have)</button>
+                <br></br>
+                <br></br>
+                <button onClick = {() => removeFromFavorites(id)}>Remove From Favorites</button>
+            </>
+        )
+    }
+    else {
+        return(
+            <>
+                <h1>{location.state.recipe_name}</h1>
+                <h3>{location.state.recipe_author}</h3>
+                <h4>{location.state.recipe_count + " Servings"}</h4>
+                <p>{location.state.recipe_steps}</p>
+                <ul>
+                    {ingredients.map((d, i) => (
+                        <li>
+                            <div>{d.quantity_numerator/d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
+                        </li>
+                    ))}
+                </ul>
+                <button onClick = {() => addToGroceryList(id)}>Cook Later (Add All Ingredients)</button>
+                <br></br>
+                <br></br>
+                <button onClick = {() => removeFromPantry(id)}>Mark as Cooked (Remove Ingredients You Have)</button>
+                <br></br>
+                <br></br>
+                <button onClick = {() => addToFavorites(id)}>Favorite Recipe</button>
+            </>
+        )
+    }
+};
+
+function addToFavorites(id){
+    fetch('http://localhost:8081/addToFavorites/' + id)
+    .then(res => res.json())
+    .catch(err => console.log(err));
+};
+
+function removeFromFavorites(id){
+    fetch('http://localhost:8081/removeFromFavorites/' + id)
+    .then(res => res.json())
+    .catch(err => console.log(err));
 };
 
 function removeFromPantry(id){
