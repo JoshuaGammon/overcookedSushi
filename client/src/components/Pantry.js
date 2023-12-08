@@ -23,6 +23,7 @@ function Pantry() {
                 <th>Amount</th>
                 <th>Unit Type</th>
                 <th>Date Bought</th>
+                <th>Remove From Pantry</th>
               </tr>
             </thead>
             <tbody>
@@ -33,6 +34,9 @@ function Pantry() {
                 <td>{(d.quantity_numerator/d.quantity_denominator)}</td>
                 <td>{d.measurement_type}</td>
                 <td>{d.bought_date.toString().slice(0,10)}</td>
+                <td>
+                  <button onClick = {() => deleteFromPantry(d.ingredient_id)}>Remove From Pantry</button>
+                </td>
               </tr>
               ))}
             </tbody>
@@ -50,5 +54,13 @@ function Pantry() {
   }
   
 };
+
+function deleteFromPantry(id){
+  fetch('http://localhost:8081/deleteFromPantry/' + id)
+  .then(res => res.json())
+  .catch(err => console.log(err));
+
+  //Force page refresh
+}
 
 export default Pantry;
