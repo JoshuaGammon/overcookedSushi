@@ -20,6 +20,8 @@ function Grocery() {
               <th>Name</th>
               <th>Amount</th>
               <th>Unit Type</th>
+              <th>Mark As Bought</th>
+              <th>Remove From List</th>
             </thead>
             <tbody>
               {data.map((rowData, rowIndex) => (
@@ -28,13 +30,19 @@ function Grocery() {
                   <td>{rowData.ingredient_name}</td>
                   <td>{rowData.quantity_numerator/rowData.quantity_denominator}</td>
                   <td>{rowData.measurement_type}</td>
+                  <td>
+                    <button onClick = {() => markBought(rowData.ingredient_id)}>Mark as Bought</button>
+                  </td>
+                  <td>
+                    <button onClick = {() => deleteFromList(rowData.ingredient_id)}>Remove From List</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <br></br>
-        <button onClick = {() => migrateGroceries()}>Mark Items as Bought</button>
+        <button onClick = {() => migrateGroceries()}>Mark All Items as Bought</button>
       </>
     )
   }
@@ -47,10 +55,28 @@ function Grocery() {
   }
 };
 
+function markBought(id){
+  fetch('http://localhost:8081/markBought/' + id)
+  .then(res => res.json())
+  .catch(err => console.log(err));
+
+  //Force page refresh
+};
+
+function deleteFromList(id){
+  fetch('http://localhost:8081/deleteFromList/' + id)
+  .then(res => res.json())
+  .catch(err => console.log(err));
+
+  //Force page refresh
+};
+
 function migrateGroceries() {
   fetch('http://localhost:8081/migrateGroceries')
   .then(res => res.json())
   .catch(err => console.log(err));
+
+  //Force page refresh
 };
 
 export default Grocery;
