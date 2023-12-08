@@ -9,10 +9,10 @@ app.use(express.json())
 
 //  Connecting to DB
 const db = mysql.createConnection({
-    host: '',
-    user: '',
-    password: '', // FILL IN
-    database: '' // FILL IN
+    host: 'localhost',
+    user: 'root',
+    password: '#overcookedSushi345#', // FILL IN
+    database: 'test_db' // FILL IN
 })
 
 //  API Calls
@@ -23,6 +23,62 @@ app.get('/recipes', (req,res)=>{
         return res.json(data);
     })
 })
+
+app.get('/allIngredients', (req,res)=>{
+    const sql = "SELECT ingredient_name, ingredient_id FROM Ingredient"
+    db.query(sql, (err,data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post('/createRecipe', (req,res)=>{
+    const { recipeName, servings, steps, classification, attribution, ingredients } = req.body;
+
+    const createRecipe = "INSERT INTO Recipe (recipe_name, servings, steps, classification, attribution) VALUES (?, ?, ?, ?, ?)";
+
+    const values = [recipeName, servings, steps, classification, attribution];
+
+    db.query(createRecipe, values, (err, data) => {
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+
+    getRecipeID(recipeName, (err, recipeID) => {
+        if (err) {
+            console.error(err);
+        } else {
+            addContainment(ingredients, recipeID);
+        }
+    });
+})
+
+function addContainment(ingredients, recipeID, res) {
+    ingredients.forEach(ingredient => {
+        const addContItem = "INSERT INTO Containment (recipe_id, ingredient_id, quantity_numerator, quantity_denominator, measurement_type) VALUES (?, ?, ?, ?, ?)";
+        
+        const values1 = [recipeID, ingredient.ingredient_id, ingredient.quantity, 1, ingredient.unit]
+        db.query(addContItem, values1, (err, data) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Failed to add containment' });
+            } else {
+            }
+        })
+    });
+}
+
+function getRecipeID(recipeName, callback) {
+    const sql = "SELECT DISTINCT recipe_id FROM Recipe WHERE recipe_name = ?";
+    db.query(sql, [recipeName], (err, data) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            const recipeID = data.length > 0 ? data[0].recipe_id : null; //just in case not distinct
+            callback(null, recipeID);
+        }
+    });
+}
 
 app.get('/retrieveUsers', (req,res)=>{
     const sql = "SELECT * FROM User"
@@ -40,13 +96,92 @@ app.get('/pantryItems', (req,res)=>{
     })
 })
 
-app.get('/recipes/:recipe_id', (req,res)=>{
+app.get('/recipes/:recipe_id', async (req,res)=>{
     let id = req.params.recipe_id;
-    const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?"
-    db.query(ingredients, [id], (err,data) =>{
-        if(err) return res.json(err);
-        return res.json(data);
-    })
+    let ingredientLst = [];
+    const ingredients = "SELECT Ingredient.ingredient_id, Ingredient.ingredient_name, Containment.quantity_numerator, Containment.quantity_denominator, Containment.measurement_type FROM Containment INNER JOIN Ingredient ON Containment.ingredient_id = Ingredient.ingredient_id WHERE Containment.recipe_id = ?";
+    
+    try {
+        const data1 = await new Promise((resolve, reject) => {
+            db.query(ingredients, [id], (err1,data) =>{
+                if(err1) reject(err1);
+                else resolve(data);
+            })
+        })
+
+        for(let i = 0; i < data1.length -1; i++){
+            const pantryCheck = "SELECT * FROM Pantry WHERE ingredient_id = " + data1[i].ingredient_id;
+
+            try{
+                const data2 = await new Promise((resolve, reject) => {
+                    db.query(pantryCheck, (err2, data) => {
+                        if(err2) reject(err2);
+                        else resolve(data);
+                    })
+                })
+
+                if (data2.length > 0){
+                    if (data1[i].measurement_type == data2[0].measurement_type){
+                        let pantry = data2[0].quantity_numerator / parseFloat(data2[0].quantity_denominator);
+                        let recipe = data1[i].quantity_numerator / parseFloat(data1[i].quantity_denominator);
+                        if(pantry >= recipe){
+                            ingredientLst.push(
+                                {
+                                    "ingredient_id": data1[i].ingredient_id,
+                                    "ingredient_name": data1[i].ingredient_name,
+                                    "quantity_numerator": data1[i].quantity_numerator,
+                                    "quantity_denominator": data1[i].quantity_denominator,
+                                    "measurement_type": data1[i].measurement_type,
+                                    "pantry": true,
+                                }
+                            )
+                        }
+                    } else {
+                        try{
+                            [recipe_num, recipe_den] = convertUnits(data1[i].measurement_type, data2[0].measurement_type, data1[i].quantity_numerator, data1[i].quantity_denominator);
+
+                        } catch (e) {
+                            console.log("Problem converting units.")
+                            return res.json("Can't convert units");
+                        }
+
+                        let pantry = data2[0].quantity_numerator / parseFloat(data2[0].quantity_denominator);
+                        let recipe = recipe_num / parseFloat(recipe_den);
+                        if(pantry >= recipe){
+                            ingredientLst.push(
+                                {
+                                    "ingredient_id": data1[i].ingredient_id,
+                                    "ingredient_name": data1[i].ingredient_name,
+                                    "quantity_numerator": data1[i].quantity_numerator,
+                                    "quantity_denominator": data1[i].quantity_denominator,
+                                    "measurement_type": data1[i].measurement_type,
+                                    "pantry": true,
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    ingredientLst.push(
+                        {
+                            "ingredient_id": data1[i].ingredient_id,
+                            "ingredient_name": data1[i].ingredient_name,
+                            "quantity_numerator": data1[i].quantity_numerator,
+                            "quantity_denominator": data1[i].quantity_denominator,
+                            "measurement_type": data1[i].measurement_type,
+                            "pantry": false,
+                        }
+                    )
+                }
+            } catch (err) {
+                return res.json(err);
+            }
+        }
+        //console.log(ingredientLst);
+        return res.json(ingredientLst);
+
+    } catch (err){
+        return res.json(err);
+    }
 })
 
 app.get('/retrieveGrocery', (req,res)=>{

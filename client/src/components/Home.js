@@ -9,7 +9,6 @@ function Home() {
     .catch(err => console.log(err));
   }, [])
 
-  console.log(data)
   let expiringItems = [];
 
   data.map((item) => {

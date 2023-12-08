@@ -18,78 +18,110 @@ function RecipeEntry() {
         .then(isFavorite => setStatus(isFavorite))
         .catch(err => console.log(err));
     }, [id]);
+
+    const [count, setCount] = useState(0);
+    useEffect(() => {   
+        const pantryCount = ingredients.reduce((accumulator, currentItem) => {
+            if (currentItem.pantry) {
+                return accumulator + 1;
+            }
+            return accumulator;
+        }, 0);
+
+        setCount(pantryCount);
+    }, [ingredients]);
+
+    const percentage = Math.round(count / parseFloat(ingredients.length) * 100)
+    const circle_specifics = percentage + ", 100"
     
-    // const CheckPantry = (id) => {
-    //     const [tmp, setTmp] = useState([])
-    //     fetch('http://localhost:8081/pantry/'+ id)
-    //     .then(res => res.json)
-    //     .then(tmp => setTmp(tmp))
-    //     .catch(err => console.log(err));
-
-    //     if(tmp) return false;
-    //     return true
-    // }
-
-    // let [haves, setHaves] = useState([])
-    // ingredients.forEach((x) => {
-    //     const [tmp, setTmp] = useState([])
-    //     useEffect(()=>{
-    //         fetch('http://localhost:8081/pantry/' + x.ingredient_id)
-    //         .then(res => res.json())
-    //         .then(tmp => setTmp(tmp))
-    //         .then(setHaves({...haves, tmp}))
-    //         .catch(err=>console.log(err));
-    //     }, [id]);
-    // })
-
     if(isFavorite){
-        return(
-            <>
-                <h1>{location.state.recipe_name}</h1>
-                <h3>{location.state.recipe_author}</h3>
-                <h4>{location.state.recipe_count + " Servings"}</h4>
-                <p>{location.state.recipe_steps}</p>
-                <ul>
-                    {ingredients.map((d, i) => (
-                        <li>
-                            <div>{d.quantity_numerator/d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
-                        </li>
-                    ))}
-                </ul>
-                <button onClick = {() => addToGroceryList(id)}>Cook Later (Add All Ingredients)</button>
-                <br></br>
-                <br></br>
-                <button onClick = {() => removeFromPantry(id)}>Mark as Cooked (Remove Ingredients You Have)</button>
-                <br></br>
-                <br></br>
-                <button onClick = {() => removeFromFavorites(id)}>Remove From Favorites</button>
-            </>
-        )
+      return(
+        <>
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg"
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path class="circle"
+                        stroke-dasharray={circle_specifics}
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <text x="18" y="20.35" class="percentage">{percentage}%</text>
+                </svg>
+            <h1 style={{textAlign:"center"}}>{location.state.recipe_name}</h1>
+            <h3 style={{textAlign:"center"}}>{location.state.recipe_author}</h3>
+            <h4 style={{textAlign:"center"}}>{location.state.recipe_count + " Servings"}</h4>
+            <p>{location.state.recipe_steps}</p>
+            <ul>
+                {ingredients.map((d, i) => (
+                    <li>
+                        {d.pantry ? (
+                            <p style={{color: "#4C814D"}}>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</p>
+                        ) : (
+                            <p style={{color: "red"}}>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</p>
+                        )}
+                            
+                    </li>
+                ))}
+            </ul>
+            <button onClick = {() => removeFromPantry(id)}>Mark as Cooked</button>
+            <br></br>
+            <br></br>
+            <button onClick = {() => addToGroceryList(id, ingredients)}>Cook Later</button>
+            <br></br>
+            <br></br>
+            <button onClick = {() => removeFromFavorites(id)}>Remove From Favorites</button>
+        </>
+    )
+      
     }
     else {
-        return(
-            <>
-                <h1>{location.state.recipe_name}</h1>
-                <h3>{location.state.recipe_author}</h3>
-                <h4>{location.state.recipe_count + " Servings"}</h4>
-                <p>{location.state.recipe_steps}</p>
-                <ul>
-                    {ingredients.map((d, i) => (
-                        <li>
-                            <div>{d.quantity_numerator/d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</div>
-                        </li>
-                    ))}
-                </ul>
-                <button onClick = {() => addToGroceryList(id)}>Cook Later (Add All Ingredients)</button>
-                <br></br>
-                <br></br>
-                <button onClick = {() => removeFromPantry(id)}>Mark as Cooked (Remove Ingredients You Have)</button>
-                <br></br>
-                <br></br>
-                <button onClick = {() => addToFavorites(id)}>Favorite Recipe</button>
-            </>
-        )
-    }
+      return(
+        <>
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg"
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path class="circle"
+                        stroke-dasharray={circle_specifics}
+                        d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <text x="18" y="20.35" class="percentage">{percentage}%</text>
+                </svg>
+            <h1 style={{textAlign:"center"}}>{location.state.recipe_name}</h1>
+            <h3 style={{textAlign:"center"}}>{location.state.recipe_author}</h3>
+            <h4 style={{textAlign:"center"}}>{location.state.recipe_count + " Servings"}</h4>
+            <p>{location.state.recipe_steps}</p>
+            <ul>
+                {ingredients.map((d, i) => (
+                    <li>
+                        {d.pantry ? (
+                            <p style={{color: "#4C814D"}}>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</p>
+                        ) : (
+                            <p style={{color: "red"}}>{d.quantity_numerator}/{d.quantity_denominator} {d.measurement_type} {d.ingredient_name}</p>
+                        )}
+                            
+                    </li>
+                ))}
+            </ul>
+            <button onClick = {() => removeFromPantry(id)}>Mark as Cooked</button>
+            <br></br>
+            <br></br>
+            <button onClick = {() => addToGroceryList(id, ingredients)}>Cook Later</button>
+            <br></br>
+            <br></br>
+            <button onClick = {() => addToFavorites(id)}>Favorite Recipe</button>
+        </>
+    )
+      
+  }
 };
 
 function addToFavorites(id){
@@ -110,7 +142,8 @@ function removeFromPantry(id){
     .catch(err => console.log(err));
 };
 
-function addToGroceryList(id){
+function addToGroceryList(id, ingredients){
+    console.log(ingredients)
     fetch('http://localhost:8081/addIngredients/' + id)
     .then(res => res.json())
     .catch(err => console.log(err));
