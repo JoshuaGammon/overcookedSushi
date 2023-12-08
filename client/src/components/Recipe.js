@@ -21,15 +21,6 @@ function Recipe() {
     navigate('/recipes/'+ name, {state:{recipe_id: id, recipe_name: name, recipe_count: servings, recipe_steps: steps, recipe_author: attribution}})
   }
 
-  // function GetDetails([id]) {
-  //   const [ingredients, setData] = useState([])
-  //   useEffect(()=>{
-  //     fetch('http://localhost:8081/recipes/'+id)
-  //     .then(res => res.json())
-  //     .then(ingredients => setData(ingredients))
-  //     .catch(err => console.log(err));
-  //   }, [id]);
-  // }
 
   return(
     <>
