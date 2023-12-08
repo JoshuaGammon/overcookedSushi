@@ -9,10 +9,10 @@ app.use(express.json())
 
 //  Connecting to DB
 const db = mysql.createConnection({
-    host: '',
+    host: 'localhost',
     user: 'root',
-    password: 'Must$coch24', // FILL IN
-    database: 'overcookedSushi_db' // FILL IN
+    password: '#overcookedSushi345#', // FILL IN
+    database: 'test_db' // FILL IN
 })
 
 //  API Calls
@@ -24,7 +24,63 @@ app.get('/recipes', (req,res)=>{
     })
 })
 
-//  API Calls
+app.get('/allIngredients', (req,res)=>{
+    const sql = "SELECT ingredient_name, ingredient_id FROM Ingredient"
+    db.query(sql, (err,data)=>{
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+})
+
+app.post('/createRecipe', (req,res)=>{
+    const { recipeName, servings, steps, classification, attribution, ingredients } = req.body;
+
+    const createRecipe = "INSERT INTO Recipe (recipe_name, servings, steps, classification, attribution) VALUES (?, ?, ?, ?, ?)";
+
+    const values = [recipeName, servings, steps, classification, attribution];
+
+    db.query(createRecipe, values, (err, data) => {
+        if(err) return res.json(err);
+        return res.json(data);
+    })
+
+    getRecipeID(recipeName, (err, recipeID) => {
+        if (err) {
+            console.error(err);
+        } else {
+            addContainment(ingredients, recipeID);
+        }
+    });
+})
+
+function addContainment(ingredients, recipeID, res) {
+    ingredients.forEach(ingredient => {
+        const addContItem = "INSERT INTO Containment (recipe_id, ingredient_id, quantity_numerator, quantity_denominator, measurement_type) VALUES (?, ?, ?, ?, ?)";
+        
+        const values1 = [recipeID, ingredient.ingredient_id, ingredient.quantity, 1, ingredient.unit]
+        db.query(addContItem, values1, (err, data) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Failed to add containment' });
+            } else {
+            }
+        })
+    });
+}
+
+function getRecipeID(recipeName, callback) {
+    const sql = "SELECT DISTINCT recipe_id FROM Recipe WHERE recipe_name = ?";
+    db.query(sql, [recipeName], (err, data) => {
+        if (err) {
+            callback(err, null);
+        } else {
+            const recipeID = data.length > 0 ? data[0].recipe_id : null; //just in case not distinct
+            callback(null, recipeID);
+        }
+    });
+}
+
+
 app.get('/retrieveUsers', (req,res)=>{
     const sql = "SELECT * FROM User"
     db.query(sql, (err,data) => {
