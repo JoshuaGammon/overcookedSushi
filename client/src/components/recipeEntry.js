@@ -114,7 +114,7 @@ function RecipeEntry() {
             <button onClick = {() => removeFromPantry(id)}>Mark as Cooked</button>
             <br></br>
             <br></br>
-            <button onClick = {() => addToGroceryList(id, ingredients)}>Cook Later</button>
+            <button onClick = {() => addToGroceryList(ingredients)}>Cook Later</button>
             <br></br>
             <br></br>
             <button onClick = {() => addToFavorites(id)}>Favorite Recipe</button>
