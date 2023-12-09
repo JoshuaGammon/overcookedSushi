@@ -105,11 +105,11 @@ app.get('/recipes/:recipe_id', async (req,res)=>{
         const data1 = await new Promise((resolve, reject) => {
             db.query(ingredients, [id], (err1,data) =>{
                 if(err1) reject(err1);
-                else resolve(data);
+                else {resolve(data); console.log(data)}
             })
         })
 
-        for(let i = 0; i < data1.length -1; i++){
+        for(let i = 0; i < data1.length; i++){
             const pantryCheck = "SELECT * FROM Pantry WHERE ingredient_id = " + data1[i].ingredient_id;
 
             try{
